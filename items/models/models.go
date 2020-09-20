@@ -1,13 +1,14 @@
 package models
 
 import (
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"gorm.io/gorm"
+	_ "gorm.io/driver/sqlite"
 )
 
 type Item struct {
 	gorm.Model
-	Title  string `json:"name"`
-	Owner string `json:"author"`
-	Type string    `json:"rating"`
+	Title  string `json:"title"`
+	Category string    `json:"category"`
+	Description string `json:"description"`
+	OwnerID string `json:"ownerId"`
 }

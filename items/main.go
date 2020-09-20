@@ -2,20 +2,19 @@ package main
 
 import (
 	"fmt"
+	db "github.com/conorburke/freddies/items/database"
+	"github.com/conorburke/freddies/items/models"
 	fiber "github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	"github.com/conorburke/freddies/items/models"
-	"github.com/conorburke/freddies/items/database"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 func main() {
-	app := fiber.New();
+	app := fiber.New()
 	app.Use(cors.New())
 
 	initializeDb()
-	defer database.DBConn.Close()
 
 	registerRoutes(app)
 
@@ -24,13 +23,14 @@ func main() {
 
 func initializeDb() {
 	var err error
-	database.DBConn, err = gorm.Open("sqlite3", "item.db")
+	db.DB, err = gorm.Open(sqlite.Open("items.db"), &gorm.Config{})
 	if err != nil {
-		// panic("Failed to connect to DB")
-		fmt.Println(err)
+		fmt.Println("failed to connect database")
 	}
 	fmt.Println("Connected to sqlite3")
-	database.DBConn.AutoMigrate(&models.Item{})
+	// Migrate the schema
+	db.DB.AutoMigrate(&models.Item{})
+
 	fmt.Println("DB migrated successfully")
 
 }
@@ -38,7 +38,7 @@ func initializeDb() {
 func registerRoutes(app *fiber.App) {
 	baseURL := "api/items"
 	app.Get(baseURL, helloWorld)
-	app.Get(baseURL + "/second/:value", second)
+	app.Get(baseURL+"/second/:value", second)
 	app.Post("/api/items", newItem)
 }
 
@@ -52,14 +52,10 @@ func second(c *fiber.Ctx) error {
 }
 
 func newItem(c *fiber.Ctx) error {
-	db := database.DBConn
+	db.DB.Create(&models.Item{Title: "Couch", OwnerID: "Kman", Category: "Junk"})
 	var item models.Item
-	item.Title = "Couch"
-	item.Owner = "Kman"
-	item.Type = "Junk"
-	db.Create(&item)
+	db.DB.Last(&item)
 	fmt.Println("item created!")
+	fmt.Println(item)
 	return c.JSON(item)
 }
-
-

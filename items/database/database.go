@@ -1,8 +1,8 @@
 package database
 
 import (
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"gorm.io/gorm"
+	_ "gorm.io/driver/sqlite"
 )
 
-var ( DBConn *gorm.DB )
+var DB *gorm.DB
